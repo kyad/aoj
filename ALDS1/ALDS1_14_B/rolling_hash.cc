@@ -2,9 +2,7 @@
 // https://qiita.com/keymoon/items/11fac5627672a6d6a9f6
 // https://drken1215.hatenablog.com/entry/2019/09/16/014600
 // https://www.npca.jp/magazine/2021/maguro
-
-// Verified: https://judge.u-aizu.ac.jp/onlinejudge/review.jsp?rid=7312195#1
-// Same code but WA: https://judge.u-aizu.ac.jp/onlinejudge/review.jsp?rid=7312190#1
+// https://atcoder.jp/contests/abc274/editorial/5026
 
 #include <iostream>
 #include <vector>
@@ -13,14 +11,8 @@ using namespace std;
 // ローリングハッシュ
 #include <ctime>
 #include <random>
-unsigned long long random_value() {
-  time_t now = time(nullptr);
-  mt19937_64 mt((unsigned long long)now);
-  return mt();
-}
-
 struct RollingHash {
-  const unsigned long long MOD = (1ULL<<61) - 1;  // MOD=2^61-1
+  static const unsigned long long MOD = (1ULL<<61) - 1;  // MOD=2^61-1
 
   int N;
   unsigned long long base = 10000000007;
@@ -57,6 +49,14 @@ struct RollingHash {
     return ans;
   }
 
+  // ランダムなbaseを決めたい時に使う。RollingHash::random_base()で呼ぶ
+  static unsigned long long random_base() {
+    time_t now = time(nullptr);
+    mt19937_64 mt((unsigned long long)now);
+    uniform_int_distribution<unsigned long long> dist(1ULL, MOD - 1);
+    return dist(mt);
+  }
+
   // 初期化 O(N)
   void build(const string &A) {
     N = A.size();
@@ -68,13 +68,9 @@ struct RollingHash {
     }
   }
 
-  RollingHash(const string &A, unsigned long long _base) : base(_base) {
-    build(A);
-  }
-
-  RollingHash(const string &A) {
-    RollingHash(A, random_value());
-  }
+  // コンストラクタ
+  RollingHash(const string &A, unsigned long long _base) : base(_base) { build(A); }
+  RollingHash(const string &A) { RollingHash(A, random_base()); }
 
   // [a, b)のハッシュを取得 O(1)
   unsigned long long get(int a, int b) {  // 0-indexed
@@ -113,7 +109,7 @@ int main() {
   cin >> T;
   string P;
   cin >> P;
-  unsigned long long base = random_value();
+  unsigned long long base = RollingHash::random_base();
   RollingHash rh_t(T, base);
   RollingHash rh_p(P, base);
   unsigned long long p = rh_p.get(0, P.size());
